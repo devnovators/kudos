@@ -1,22 +1,46 @@
+<style is="custom-style" include="iron-flex">
+  div[role="listbox"] {
+    margin-left:10px;
+    border: 1px solid #e5e5e5;
+  }
+  .project {
+    box-sizing: border-box;
+    max-width: 184px;
+    margin: 4px;
+    flex: 0 0 auto;
+}
+</style>
+
 <dom-module id="kudos-app">
     <template>
         <div>Hola {{echo}}!</div>
-        <template is="dom-repeat" items="{{projects}}" as="project">
-          <span>- {{project.id}}</span>
-        </template>
+        <button on-click="viewAll">Ver Projects</button>
+        <div role="listbox">
+          <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
+            <paper-card heading="{{project.nombre}}" class="project">
+              <div class="card-content">
+                <div><iron-icon icon="icons:description"></iron-icon> {{project.descripcion}}</div>
+                <div><iron-icon icon="social:group"></iron-icon> {{project.team}}</div>
+              </div>
+              <div class="card-actions">
+                <paper-button>Votar</paper-button>
+              </div>
+            </paper-card>
+          </template>
+        </div>
     </template>
 </dom-module>
-<script src="https://www.gstatic.com/firebasejs/3.0.2/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
 <script>
     Polymer({
       is: 'kudos-app',
       properties:{
           echo:String,
-          projects:Object
+          projects:Array,
+          _firebase:Object
       },
       ready:function() {
           this.echo = "Paúlymer";
-          alert(this.echo);
           var config = {
               apiKey: 'AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk',
               authDomain: 'devnovators.firebaseapp.com',
@@ -24,12 +48,29 @@
               storageBucket: 'devnovators.appspot.com'
           };
           firebase.initializeApp(config);
-          this.aumentar(firebase.database().ref('projects/patxatm'))
+          this._firebase=firebase;
+          this.refresh(this._firebase);
+          //this.aumentar(firebase.database().ref('projects/patxatm'))
+      },
+      viewAll:function(){
+        this.refresh(this._firebase);
+      },
+      refresh:function(){
+        var db = this._firebase.database();
+        var ref = db.ref("/projects");
+        var that = this;
+        ref.on("value", function(snapshot) {
+          that.projects = [];
+          snapshot.forEach(function(child) {
+            var project = child.val();
+            that.push('projects', project); //THIS IS ALL!!!
+          });
+        });
+        this.$.resultList.render();
       },
       aumentar:function(postRef) {
           postRef.transaction(function(project) {
             if (project) {
-              //project.stars = project.stars + 1;
               project.stars++;
             }
             return project;

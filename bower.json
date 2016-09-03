@@ -1,0 +1,27 @@
+{
+  "name": "kudos",
+  "homepage": "https://github.com/devnovators/kudos",
+  "authors": [
+    "devnovators"
+  ],
+  "description": "Kudos App for PI1 Demo",
+  "main": "index.html",
+  "keywords": [
+    "kudos",
+    "pi1",
+    "demo",
+    "devnovators",
+    "hack"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.6.1"
+  }
+}

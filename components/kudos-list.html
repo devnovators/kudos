@@ -1,0 +1,94 @@
+<dom-module id="kudos-list">
+<style is="custom-style">
+
+  .rate-content {
+    width: 100%;
+    @apply(--layout-flex);
+    float: left;
+  }
+  .rate-header { @apply(--paper-font-headline); }
+  .rate-name { color: var(--paper-grey-600); margin: 10px 0; }
+  paper-icon-button.rate-icon {
+    --iron-icon-fill-color: white;
+    --iron-icon-stroke-color: var(--paper-grey-600);
+    cursor: pointer;
+  }
+  paper-icon-button.rate-icon:hover{
+    background-color: yellow !important;
+    color: blue;
+  }
+  paper-icon-button.rate-ico:active{
+    background-color: yellow !important;
+  }
+</style>
+    <template>
+        <div class="card-actions">
+          <template is="dom-repeat" items="{{kudos}}" as="kudo">
+            <paper-icon-button class="rate-icon" icon="{{kudo.icon}}" title="{{kudo.title}}"></paper-icon-button>{{kudo.count}}
+          </template>
+        </div>
+    </template>
+</dom-module>
+<script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
+<script>
+    Polymer({
+      is: 'kudos-list',
+      properties:{
+          project:{
+            type:Array,
+            notify: true
+          },
+          kudos:{
+            type:Array,
+            notify: true
+          },
+          _firebase:Object
+      },
+      attached:function(){
+        this.getKudos();
+      },
+      ready:function(){
+        //this.loadKudos();
+      },
+      getKudos:function(){
+        var that = this;
+        var projKudos = this.project.kudos;
+        this.kudos = [];
+        this._firebase.database().ref('/kudos').once('value').then(function(snapshot) {
+        snapshot.forEach(function(child) {
+          var kudo = child.val();
+          kudo.count=0;
+          if (!(typeof projKudos[child.key] === "undefined")){
+            kudo.count=projKudos[child.key];  
+          }
+          that.push('kudos', kudo);
+        });
+        });
+      },
+      loadKudos:function(){
+        var projKudos = this.project.kudos;
+        var _count=0;
+        console.log('$$$$$$$$$ => ' + this.project.nombre);
+        for (var ind in this.kudos) {
+          _count=0;
+          var _key=this.kudos[ind].key;
+          if (!(typeof projKudos[_key] === "undefined")){
+           _count = projKudos[_key];
+          }
+          this.set('kudos.'+ind+'.count',_count);
+        }
+        console.log(this.kudos);
+        for (var ind in this.kudos) {
+            console.log(ind +': '+this.kudos[ind].key + ' - countVot: ' + this.kudos[ind].count);
+        }
+      },
+      votar:function(weight){
+          postRef.transaction(function(project) {
+            if (project) {
+              project.stars=project.stars+weight;
+            }
+            //return project;
+          });
+      }
+    });
+</script>

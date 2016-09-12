@@ -12,9 +12,11 @@
   }
   paper-card {
     width: 100%;
-    margin-bottom:10px;
+    margin:10px;
   }
-  paper-card.rate { @apply(--layout-horizontal); }
+  paper-card.rate { 
+    @apply(--layout-horizontal); 
+  }
   .rate-content {
     width: 100%;
     @apply(--layout-flex);
@@ -37,27 +39,18 @@
   
 </style>
     <template >
+    	<app-toolbar class="layout horizontal" style="color:#fff;background-color:#094fa4;">
+    		<paper-icon-button icon="menu" width="40px"></paper-icon-button>
+    		<div main-title style="display:flex;flex:1;">Kudos</div>
+    		<paper-icon-button icon="search" width="40px"></paper-icon-button>
+    	</app-toolbar>
       <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
         <paper-card class="rate">
           <div class="rate-content">
             <div class="card-content">
               <div class="rate-header">{{project.nombre}}</div>
-              <div class="rate-name">{{project.team}}</div>
+              <div class="rate-name">@{{project.team}}</div>
               <div>{{project.descripcion}}</div>
-              <div>
-               <google-youtube
-                  video-id="{{project.video}}"
-                  height="100px"
-                  width="200px"
-                  rel="0"
-                  start="5"
-                  playsinline="0"
-                  controls="0"
-                  showinfo="0"
-                  autoplay="0"
-                  chromeless=true
-                </google-youtube>
-              </div>
             </div>
             <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
         </paper-card>
@@ -92,44 +85,6 @@
           this.refresh();
           this.$.resultList.render();
           //this.aumentar(firebase.database().ref('projects/patxatm'))
-      },
-      _sort: function() {
-        console.info(this.order + ' <== ordenar por.');
-        switch(this.order) {
-          case 'i'://por key 
-            this.projects.sort(function (a, b) {
-              if (a.id > b.id) {
-                return 1;
-              }
-              if (a.id < b.id) {
-                return -1;
-              }
-              return 0;
-            });
-          case 'n'://por nombre
-            this.projects.sort(function (a, b) {
-              if (a.nombre.toLowerCase() > b.nombre.toLowerCase()) {
-                return 1;
-              }
-              if (a.nombre.toLowerCase()  < b.nombre.toLowerCase() ) {
-                return -1;
-              }
-              return 0;
-            });
-          case 't'://por team
-            this.projects.sort(function (a, b) {
-              if (a.team.toLowerCase()  > b.team.toLowerCase() ) {
-                return 1;
-              }
-              if (a.team.toLowerCase()  < b.team.toLowerCase() ) {
-                return -1;
-              }
-              return 0;
-            });
-        }
-        Polymer.dom.flush();
-        this.$.resultList.render();
-        console.log(this.projects);
       },
       getKudos:function(){
         var that = this;

@@ -37,6 +37,7 @@
     "paper-item": "PolymerElements/paper-item#^1.2.1",
     "paper-checkbox": "PolymerElements/paper-checkbox#^1.4.0",
     "google-web-components": "GoogleWebComponents/google-web-components#^1.0.0",
-    "google-youtube": "GoogleWebComponents/google-youtube#^1.2.1"
+    "google-youtube": "GoogleWebComponents/google-youtube#^1.2.1",
+    "google-signin": "GoogleWebComponents/google-signin#^1.3.6"
   }
 }

@@ -29,13 +29,12 @@
             <paper-icon-button class="rate-icon" id="{{kudo.id}}"
                   icon="{{kudo.icon}}" 
                   on-tap="votar"></paper-icon-button>
-            <paper-tooltip for="{{kudo.id}}">{{kudo.title}}</paper-tooltip>
+            <paper-tooltip for="{{kudo.id}}">{{kudo.title}}<br> {{kudo.description}}</paper-tooltip>
             <paper-badge for="{{kudo.id}}" label="{{kudo.count}}" class="blue"></paper-badge>
           </template>
         </div>
     </template>
 </dom-module>
-<script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
 <script>
     Polymer({
       is: 'kudos-list',
@@ -84,10 +83,7 @@
       loadKudos:function(){
         var projKudos = this.project.kudos;
         var _count=0;
-        
         var refControl = this._firebase.database().ref('/users').child('hsaira').child('votaciones').child(this.project.id).child('kudos');
-        
-        
         for (var ind in this.kudos) {
           _count=0;
           var _key=this.kudos[ind].key;
@@ -96,10 +92,6 @@
           }
           this.set('kudos.'+ind+'.count',_count);
         }
-        
-        //for (var ind in this.kudos) {
-        //    console.log(ind +': '+this.kudos[ind].key + ' - countVot: ' + this.kudos[ind].count);
-        //}
       },
       votar:function(e) {
         var kudoSeleccionado = e.model['__data__'];
@@ -109,11 +101,7 @@
         if (kudoSeleccionado.kudo.type === "minus"){
           voto = -1;  
         }
-        //console.log(voto);
         var postRef = this._firebase.database().ref('/projects').child(this.project.id).child('kudos').child(idKudo);
-        //var projectSelect = this.project;
-        //console.log(kudoSeleccionado.kudo.id);
-        //console.log(this.project);
         postRef.transaction(function(votoActual) {
           if (votoActual) {
             return votoActual+voto;
@@ -136,13 +124,6 @@
           kudoSeleccionado.kudo.usuarioKey = "";
           kudoSeleccionado.kudo.type = "plus";
         }
-        
-        
-       
-        
-        //kudoSeleccionado.kudo.count = kudoSeleccionado.kudo.count+1;
-        
-        //return false;
       }
     });
 </script>

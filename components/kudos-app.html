@@ -1,123 +1,154 @@
-<link rel="import" href="kudos-list.html">
-<dom-module id="kudos-app">
-<style is="custom-style">
-  .paper-header {
-    height: 60px;
-    font-size: 16px;
-    line-height: 60px;
-    padding: 0 10px;
-    color: white;
-    transition: height 0.2s;
-    background-color: blue !important;
-  }
-  paper-card {
-    width: 100%;
-    margin:10px;
-  }
-  paper-card.rate { 
-    @apply(--layout-horizontal); 
-  }
-  .rate-content {
-    width: 100%;
-    @apply(--layout-flex);
-    float: left;
-  }
-  .rate-header { @apply(--paper-font-headline); }
-  .rate-name { color: var(--paper-grey-600); margin: 10px 0; }
-  paper-icon-button.rate-icon {
-    --iron-icon-fill-color: white;
-    --iron-icon-stroke-color: var(--paper-grey-600);
-    cursor: pointer;
-  }
-  paper-icon-button.rate-icon:hover{
-    background-color: yellow !important;
-    color: blue;
-  }
-  paper-icon-button.rate-ico[active]{
-    background-color: yellow !important;
-  }
-  
-</style>
-    <template >
-    	<app-toolbar class="layout horizontal" style="color:#fff;background-color:#094fa4;">
-    		<paper-icon-button icon="menu" width="40px"></paper-icon-button>
-    		<div main-title style="display:flex;flex:1;">Kudos</div>
-    		<paper-icon-button icon="search" width="40px"></paper-icon-button>
-    	</app-toolbar>
-      <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
-        <paper-card class="rate">
-          <div class="rate-content">
-            <div class="card-content">
-              <div class="rate-header">{{project.nombre}}</div>
-              <div class="rate-name">@{{project.team}}</div>
-              <div>{{project.descripcion}}</div>
-            </div>
-            <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
-        </paper-card>
-      </template>
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 
-    </template>
-</dom-module>
-<script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
-<script>
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/iron-icons/places-icons.html">
+<link rel="import" href="../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-badge/paper-badge.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/paper-styles/demo-pages.html">
+
+
+<dom-module id="kudos-app">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #4285f4;
+        --app-secondary-color: black;
+
+        display: block;
+      }
+
+      app-header {
+        color: #fff;
+        background-color: var(--app-primary-color);
+      }
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+
+        padding: 0 16px;
+
+        text-decoration: none;
+
+        color: var(--app-secondary-color);
+
+        line-height: 40px;
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+
+        font-weight: bold;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <app-drawer-layout fullbleed>
+      <!-- Drawer content -->
+      <app-drawer>
+        <app-toolbar>Menú</app-toolbar>
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+          <a name="demos" href="/demos">Demo's</a>
+          <a name="about" href="/about">About KUDOS</a>
+        </iron-selector>
+      </app-drawer>
+
+      <!-- Main content -->
+      <app-header-layout has-scrolling-region>
+
+        <app-header condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title>Votación por Kudos</div>
+          </app-toolbar>
+        </app-header>
+
+        <iron-pages
+            selected="[[page]]"
+            attr-for-selected="name"
+            fallback-selection="view404"
+            role="main">
+          <kudos-demos name="demos"></kudos-demos>
+          <kudos-about name="about"></kudos-about>
+          <kudos-view404 name="view404"></kudos-view404>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+  </template>
+
+  <script>
     Polymer({
       is: 'kudos-app',
-      properties:{
-          projects:{
-            type: Array,
-            notify:true
-          },
-          kudos:Array,
-          _firebase:Object,
-          order:String
+
+      properties: {
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        }
       },
-      ready:function() {
-          var config = {
-              apiKey: 'AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk',
-              authDomain: 'devnovators.firebaseapp.com',
-              databaseURL: 'https://devnovators.firebaseio.com',
-              storageBucket: 'devnovators.appspot.com'
-          };
-          firebase.initializeApp(config);
-          this.order="n";
-          this._firebase=firebase;
-          //this.getKudos();
-          this.refresh();
-          this.$.resultList.render();
-          //this.aumentar(firebase.database().ref('projects/patxatm'))
+
+      observers: [
+        '_routePageChanged(routeData.page)'
+      ],
+
+      _routePageChanged: function(page) {
+        this.page = page || 'demos';
       },
-      getKudos:function(){
-        var that = this;
-        this.kudos = [];
-        this._firebase.database().ref('/kudos').once('value').then(function(snapshot) {
-          snapshot.forEach(function(child) {
-            var kudo = child.val();
-            kudo.count=0;
-            kudo.key=child.key;
-            that.push('kudos', kudo);
-          });
-        });
+
+      _pageChanged: function(page) {
+        console.log("page: " + page);
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl('kudos-' + page + '.html');
+        this.importHref(resolvedPageUrl, null, this._showPage404, true);
       },
-      refresh:function(){
-        var db = this._firebase.database();
-        var ref = db.ref("/projects");
-        var that = this;
-        that.projects = [];
-        ref.on("value", function(snapshot) {
-          snapshot.forEach(function(child) {
-            var project = child.val();
-            project.id=child.key;
-            that.push('projects', project);
-          });
-        });
-      },
-      //aumentar:function(postRef) {
-      //    postRef.transaction(function(project) {
-      //      if (project) {
-      //        project.stars++;
-      //      }
-      //      return project;
-      //    });
-      //  }
+
+      _showPage404: function() {
+        this.page = 'view404';
+      }
     });
-</script>
+  </script>
+</dom-module>

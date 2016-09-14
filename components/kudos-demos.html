@@ -54,7 +54,7 @@
             <div class="rate-header">{{project.id}} {{project.name}}</div>
             <div class="rate-name">@{{project.team}}</div>
             <div>{{project.description}}</div>
-            <input type="text" id="txtProject_{{project.id}}">
+            <paper-textarea id="txtProject_{{project.id}}" label="Ingresa tu comentario acerca del proyecto"></paper-textarea>
             <paper-icon-button class="rate-icon" id="{{project.id}}"
                   icon="announcement" 
                   on-tap="sendComment"></paper-icon-button>
@@ -177,25 +177,24 @@
       //this.$.resultList.render();
     },
     setearValor:function(user){
-          this.user=user;
-          //console.info(user.displayName);
-          this.userName=user.displayName;
-          this.userPhoto=user.photoURL;
-          this.userUid=user.uid;
+      this.user=user;
+      //console.info(user.displayName);
+      this.userName=user.displayName;
+      this.userPhoto=user.photoURL;
+      this.userUid=user.uid;
     },
     getProjects:function(){
       var db = this._firebase.database();
       var ref = db.ref("/projects");
-      var that = this;
-      that.projects = [];
+      var self = this;
+      self.set("projects",[]);
       ref.on("value", function(snapshot) {
         snapshot.forEach(function(child) {
           var project = child.val();
           project.id=child.key;
-          that.push('projects', project);
+          self.push('projects', project);
         });
       });
-      //ef.off();
     },
     sendComment:function(e){
       var project = Polymer.dom(e).localTarget;

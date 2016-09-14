@@ -14,11 +14,13 @@
     cursor: pointer;
   }
   paper-icon-button.rate-icon:hover{
-    background-color: yellow !important;
     color: blue;
   }
   paper-icon-button.rate-ico:active{
     background-color: yellow !important;
+  }
+  .blue {
+    --paper-badge-background: var(--paper-light-blue-300);
   }
 </style>
     <template>
@@ -28,7 +30,7 @@
                   icon="{{kudo.icon}}" 
                   on-tap="votar"></paper-icon-button>
             <paper-tooltip for="{{kudo.id}}">{{kudo.title}}</paper-tooltip>
-            <iron-label for="{{kudo.id}}">{{kudo.count}}</iron-label>
+            <paper-badge for="{{kudo.id}}" label="{{kudo.count}}" class="blue"></paper-badge>
           </template>
         </div>
     </template>

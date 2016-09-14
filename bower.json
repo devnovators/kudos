@@ -5,7 +5,7 @@
     "devnovators"
   ],
   "description": "Kudos App for PI1 Demo",
-  "main": "login.html",
+  "main": "index.html",
   "keywords": [
     "kudos",
     "pi1",

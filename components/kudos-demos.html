@@ -43,15 +43,11 @@
     }
   </style>
   <template>
-    <div class="error" hidden$="{{!error}}">[[error.code]]: [[error.message]]</div>
-    <div hidden$="{{user}}">
-      <button on-tap="signInWithGoogle">Sign In With Google</button>
-    </div>
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
       <paper-card class="rate">
         <div class="rate-content">
           <div class="card-content">
-            <div class="rate-header">{{project.id}} {{project.name}}</div>
+            <div class="rate-header">{{project.name}}</div>
             <div class="rate-name">@{{project.team}}</div>
             <div>{{project.description}}</div>
             <input type="text" id="txtProject_{{project.id}}">
@@ -96,62 +92,6 @@
         notify:true
       },
     },
-    showError:function(e) { 
-        this.error = e.detail;
-    },
-    signInWithGoogle:function() {
-      console.log("firebase.auth().currentUser==> " + firebase.auth().currentUser);
-      if (!firebase.auth().currentUser) {
-        // [START createprovider]
-        var provider = new firebase.auth.GoogleAuthProvider();
-        // [END createprovider]
-        // [START addscopes] provider.addScope('https://www.googleapis.com/auth/plus.login');  [END addscopes]
-        // [START signin]
-        firebase.auth().signInWithPopup(provider).then(function(result) {
-          // This gives you a Google Access Token. You can use it to access the Google API.
-          var token = result.credential.accessToken;
-          // The signed-in user info.
-          this.user = result.user;
-          this.userName=result.user.displayName;
-          this.userPhoto=result.user.photoURL;
-          this.userUid=result.user.uid;
-          // [START_EXCLUDE]
-          //document.getElementById('quickstart-oauthtoken').textContent = token;
-          // [END_EXCLUDE]
-        }).catch(function(error) {
-          // Handle Errors here.
-          this.error=error;
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          // The email of the user's account used.
-          var email = error.email;
-          // The firebase.auth.AuthCredential type that was used.
-          var credential = error.credential;
-          // [START_EXCLUDE]
-          if (errorCode === 'auth/account-exists-with-different-credential') {
-            alert('You have already signed up with a different auth provider for that email.');
-            // If you are using multiple auth providers on your app you should handle linking
-            // the user's accounts here.
-          } else {
-            console.error(error);
-          }
-          // [END_EXCLUDE]
-        });
-        // [END signin]
-      } else {
-        // [START signout]
-        firebase.auth().signOut();
-        // [END signout]
-      }
-      // [START_EXCLUDE]
-      //document.getElementById('quickstart-sign-in').disabled = true;
-      // [END_EXCLUDE]
-      this._firebase=firebase;
-    },
-    signOut:function() {
-        this.error = null;
-        firebase.auth().signOut();
-    },
     ready:function(){
       // Initialize Firebase
       var config = {
@@ -195,7 +135,7 @@
           that.push('projects', project);
         });
       });
-      //ef.off();
+      //ref.off();
     },
     sendComment:function(e){
       var project = Polymer.dom(e).localTarget;

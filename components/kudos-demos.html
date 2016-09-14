@@ -1,0 +1,225 @@
+<link rel="import" href="kudos-list.html">
+<dom-module id="kudos-demos">
+  <style include="shared-styles">
+    :host {
+      display: block;
+
+      padding: 2px;
+    }
+    
+    .paper-header {
+      height: 60px;
+      font-size: 16px;
+      line-height: 60px;
+      padding: 0 10px;
+      color: white;
+      transition: height 0.2s;
+      background-color: blue !important;
+    }
+    paper-card {
+      width: 100%;
+      margin:5px;
+    }
+    paper-card.rate { 
+      @apply(--layout-horizontal); 
+    }
+    .rate-content {
+      width: 100%;
+      @apply(--layout-flex);
+      float: left;
+    }
+    .rate-header { @apply(--paper-font-headline); }
+    .rate-name { color: var(--paper-grey-600); margin: 10px 0; }
+    paper-icon-button.rate-icon {
+      --iron-icon-fill-color: white;
+      --iron-icon-stroke-color: var(--paper-grey-600);
+      cursor: pointer;
+    }
+    paper-icon-button.rate-icon:hover{
+      background-color: yellow !important;
+      color: blue;
+    }
+    paper-icon-button.rate-ico[active]{
+    }
+  </style>
+  <template>
+    <div class="error" hidden$="{{!error}}">[[error.code]]: [[error.message]]</div>
+    <div hidden$="{{user}}">
+      <button on-tap="signInWithGoogle">Sign In With Google</button>
+    </div>
+    <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
+      <paper-card class="rate">
+        <div class="rate-content">
+          <div class="card-content">
+            <div class="rate-header">{{project.id}} {{project.name}}</div>
+            <div class="rate-name">@{{project.team}}</div>
+            <div>{{project.description}}</div>
+            <input type="text" id="txtProject_{{project.id}}">
+            <paper-icon-button class="rate-icon" id="{{project.id}}"
+                  icon="announcement" 
+                  on-tap="sendComment"></paper-icon-button>
+          </div>
+          <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
+      </paper-card>
+    </template>
+  </template>
+</dom-module>
+<script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
+<script>
+  Polymer({
+    is: 'kudos-demos',
+    properties:{
+      _firebase:Object,
+      error:{
+        type: Object,
+        value:null,
+        notify:true
+      },
+      userName: {
+        type: String,
+        notify:true
+      },
+      userUid: {
+        type: String,
+        notify:true
+      },
+      userPhoto: {
+        type: String,
+        notify:true
+      },
+      user: {
+        type: Object,
+        notify:true
+      },
+      projects:{
+        type: Array,
+        notify:true
+      },
+    },
+    showError:function(e) { 
+        this.error = e.detail;
+    },
+    signInWithGoogle:function() {
+      console.log("firebase.auth().currentUser==> " + firebase.auth().currentUser);
+      if (!firebase.auth().currentUser) {
+        // [START createprovider]
+        var provider = new firebase.auth.GoogleAuthProvider();
+        // [END createprovider]
+        // [START addscopes] provider.addScope('https://www.googleapis.com/auth/plus.login');  [END addscopes]
+        // [START signin]
+        firebase.auth().signInWithPopup(provider).then(function(result) {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          var token = result.credential.accessToken;
+          // The signed-in user info.
+          this.user = result.user;
+          this.userName=result.user.displayName;
+          this.userPhoto=result.user.photoURL;
+          this.userUid=result.user.uid;
+          // [START_EXCLUDE]
+          //document.getElementById('quickstart-oauthtoken').textContent = token;
+          // [END_EXCLUDE]
+        }).catch(function(error) {
+          // Handle Errors here.
+          this.error=error;
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // The email of the user's account used.
+          var email = error.email;
+          // The firebase.auth.AuthCredential type that was used.
+          var credential = error.credential;
+          // [START_EXCLUDE]
+          if (errorCode === 'auth/account-exists-with-different-credential') {
+            alert('You have already signed up with a different auth provider for that email.');
+            // If you are using multiple auth providers on your app you should handle linking
+            // the user's accounts here.
+          } else {
+            console.error(error);
+          }
+          // [END_EXCLUDE]
+        });
+        // [END signin]
+      } else {
+        // [START signout]
+        firebase.auth().signOut();
+        // [END signout]
+      }
+      // [START_EXCLUDE]
+      //document.getElementById('quickstart-sign-in').disabled = true;
+      // [END_EXCLUDE]
+      this._firebase=firebase;
+    },
+    signOut:function() {
+        this.error = null;
+        firebase.auth().signOut();
+    },
+    ready:function(){
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk",
+        authDomain: "devnovators.firebaseapp.com",
+        databaseURL: "https://devnovators.firebaseio.com",
+        storageBucket: "devnovators.appspot.com",
+      };
+      firebase.initializeApp(config);
+      this._firebase=firebase;
+      firebase.auth().onAuthStateChanged(function(user) {
+        console.log(user);
+        if (user) {
+           this.setearValor(user);
+          //console.info('userName: ' + this.userName + ' - this.userUid'+ this.userUid + ' - userPhoto: ' + this.userPhoto );
+          // User is signed in. //displayName - email - emailVerified - photoURL - isAnonymous -uid - providerData
+        } else {
+          // User is signed out.
+          console.log("no hay nadie conectado");
+        }
+      });
+      this.getProjects();
+      //this.$.resultList.render();
+    },
+    setearValor:function(user){
+          this.user=user;
+          //console.info(user.displayName);
+          this.userName=user.displayName;
+          this.userPhoto=user.photoURL;
+          this.userUid=user.uid;
+    },
+    getProjects:function(){
+      var db = this._firebase.database();
+      var ref = db.ref("/projects");
+      var that = this;
+      that.projects = [];
+      ref.on("value", function(snapshot) {
+        snapshot.forEach(function(child) {
+          var project = child.val();
+          project.id=child.key;
+          that.push('projects', project);
+        });
+      });
+      //ef.off();
+    },
+    sendComment:function(e){
+      var project = Polymer.dom(e).localTarget;
+      console.log(project.id);
+      var idProject =project.id;
+      var db = this._firebase.database();
+      var ref = db.ref("/projects/" + idProject);
+      var idTxt='#txtProject_'+ idProject;
+      var msg=Polymer.dom(this.root).querySelector(idTxt).value;
+      console.info(this.user);
+      var postData = {
+        //author: this.userName,
+        message: msg
+      };
+      var newPostKey = ref.child('comments').push().key;
+      var updates = {};
+      updates["/comments/" + newPostKey] = postData;
+      updates['/users/' + this.userName + '/' + newPostKey] = msg;
+      ref.update(updates);
+    },
+    attached: function() {
+  this.user;
+  // do something with childCount ...
+}
+  });
+</script>
+

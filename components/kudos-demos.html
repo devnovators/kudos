@@ -40,24 +40,37 @@
     }
     paper-icon-button.rate-ico[active]{
     }
+    
+    paper-button.green {
+      background-color: #4285f4;
+      color: white;
+    } 
   </style>
   <template>
-    <img id="imgProfile">
-    <div class="error" hidden$="{{!error}}">[[error.code]]: [[error.message]]</div>
-    <div hidden$="{{user}}">
-      <button on-tap="signInWithGoogle">Sign In With Google</button>
+    <div hidden$="{{user}}" width="100%" style="text-align:center;">
+      Bienvenido a KUDOS, para poder ingresar a votar debes identificarte. <br>
+      <paper-button class="green" raised on-tap="signInWithGoogle">
+        <iron-icon icon="perm-identity"></iron-icon> Ingresar a tu cuenta
+      </paper-button>
     </div>
+    <div hidden$="{{!user}}">
+    <img id="imgProfile" style="width:40px;height:40px!important;">
+    {{user.displayName}}      
+    </div>
+
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
       <paper-card class="rate">
         <div class="rate-content">
           <div class="card-content">
             <div class="rate-header">{{project.name}}</div>
-            <div class="rate-name">
-              @{{project.team}}
-              <paper-icon-button class="rate-icon" id="{{project.id}}" data='{{project}}'
+            <template is="dom-if" if="{{_anyTeam(project.team)}}">
+              <div class="rate-name">
+                @{{project.team}}
+                <paper-icon-button class="rate-icon" id="{{project.id}}" data='{{project}}'
                     icon="announcement" on-tap="openModal"></paper-icon-button>
-              <paper-tooltip for="{{project.id}}">Dejar feedback</paper-tooltip>
-            </div>
+                <paper-tooltip for="{{project.id}}">Dejar feedback</paper-tooltip>
+              </div>
+            </template>
             <div>{{project.description}}</div>
           </div>
           <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
@@ -67,7 +80,7 @@
       <h2 id="titleFeedback">Feedback para el proyecto</h2>
       <paper-textarea id="txtFeedback" label="Ingresa tu feedback..."></paper-textarea>
       <div class="buttons">
-        <paper-button id="btnFeedback" on-click="sendFeedback" dialog-confirm autofocus>Enviar</paper-button>
+        <paper-button id="btnFeedback" on-click="sendFeedback" autofocus>Enviar</paper-button>
         <paper-button dialog-dismiss>Cancelar</paper-button>
       </div>
     </paper-dialog>
@@ -84,6 +97,10 @@
         value:null,
         notify:true
       },
+      config:{
+        type:Object,
+        notify:true
+      },
       userName: {
         type: String,
         notify:true
@@ -98,55 +115,71 @@
       },
       user: {
         type: Object,
-        notify:true
+        notify:true,
+        value: function() { return {}; }
       },
       projects:{
         type: Array,
-        notify:false
+        notify:true
       },
+    },
+    attached:function(){
+      console.info("attached");
+      this.loadFirebase();
+      this.getProjects();
+      this.$.resultList.render();
+    },
+    loadFirebase:function(){
+      console.info("load");
+      // Initialize Firebase
+      firebase.initializeApp(this.config);
+      var self=this;
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          self.setearValor(user);
+        } else {
+          console.log("no hay nadie conectado");
+        }
+      });
+      this._firebase=firebase;
+    },
+    ready:function(){
+      console.info("ready");
+      this.config = {
+        apiKey: "AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk",
+        authDomain: "devnovators.firebaseapp.com",
+        databaseURL: "https://devnovators.firebaseio.com",
+        storageBucket: "devnovators.appspot.com",
+      };
     },
     signInWithGoogle:function() {
       if (!firebase.auth().currentUser) {
-        // [START createprovider]
         var provider = new firebase.auth.GoogleAuthProvider();
-        // [END createprovider]
-        // [START addscopes] provider.addScope('https://www.googleapis.com/auth/plus.login');  [END addscopes]
-        // [START signin]
         firebase.auth().signInWithPopup(provider).then(function(result) {
           // This gives you a Google Access Token. You can use it to access the Google API.
           var token = result.credential.accessToken;
-          // The signed-in user info.
           this.user = result.user;
           this.userName=result.user.displayName;
           this.userPhoto=result.user.photoURL;
           this.userUid=result.user.uid;
-          // [START_EXCLUDE]
+          this.getProjects();
           //document.getElementById('quickstart-oauthtoken').textContent = token;
-          // [END_EXCLUDE]
         }).catch(function(error) {
-          // Handle Errors here.
           this.error=error;
           var errorCode = error.code;
           var errorMessage = error.message;
-          // The email of the user's account used.
           var email = error.email;
           // The firebase.auth.AuthCredential type that was used.
           var credential = error.credential;
           // [START_EXCLUDE]
           if (errorCode === 'auth/account-exists-with-different-credential') {
             alert('You have already signed up with a different auth provider for that email.');
-            // If you are using multiple auth providers on your app you should handle linking
-            // the user's accounts here.
           } else {
             console.error(error);
           }
-          // [END_EXCLUDE]
         });
-        // [END signin]
       } else {
-        // [START signout]
         firebase.auth().signOut();
-        // [END signout]
       }
       // [START_EXCLUDE]
       //document.getElementById('quickstart-sign-in').disabled = true;
@@ -157,37 +190,18 @@
         this.error = null;
         firebase.auth().signOut();
     },
-    ready:function(){
-      // Initialize Firebase
-      var config = {
-        apiKey: "AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk",
-        authDomain: "devnovators.firebaseapp.com",
-        databaseURL: "https://devnovators.firebaseio.com",
-        storageBucket: "devnovators.appspot.com",
-      };
-      firebase.initializeApp(config);
-      this._firebase=firebase;
-      firebase.auth().onAuthStateChanged(function(user) {
-        console.log(user);
-        if (user) {
-           this.setearValor(user);
-          //console.info('userName: ' + this.userName + ' - this.userUid'+ this.userUid + ' - userPhoto: ' + this.userPhoto );
-          // User is signed in. //displayName - email - emailVerified - photoURL - isAnonymous -uid - providerData
-        } else {
-          // User is signed out.
-          console.log("no hay nadie conectado");
-        }
-      });
-      this.getProjects();
-      this.$.resultList.render();
+    _anyTeam:function(team){
+      if (team==null || team.length==0){
+        return false;
+      }else{
+        return true;
+      }
     },
     setearValor:function(user){
       this.user=user;
-      console.info(user.displayName);
       this.userName=user.displayName;
       this.userPhoto=user.photoURL;
       this.userUid=user.uid;
-      console.log(this.userPhoto);
       this.$.imgProfile.src=this.userPhoto;
     },
     getProjects:function(){
@@ -206,9 +220,17 @@
     openModal:function(e){
       var btnProject = Polymer.dom(e).localTarget;
       var project=btnProject.data;
+      var self=this;
       this.$.btnFeedback.data=project.id;
-      this.$.titleFeedback.innerHTML="Feedback - <br>" + project.name;
+      this.$.titleFeedback.innerHTML="Feedback para el proyecto  <br>" + project.name;
       this.$.feedback.open();
+      var ref = this._firebase.database().ref("/projects/" + project.id + "/comments/" + this.userUid);
+      ref.once('value').then(function(snapshot) {
+        var msg=snapshot.val().message;
+        if(msg!=null && msg.length >0){
+          self.$.txtFeedback.value=msg;  
+        }
+      });
     },
     sendFeedback:function(){
       var db = this._firebase.database();
@@ -216,20 +238,17 @@
       var msg=this.$.txtFeedback.value;
       var ref = db.ref("/projects/" + idProject);
       var postData = {
-        //author: this.userName,
+        //author: this.userUid,
         message: msg
       };
-      var newPostKey = ref.child('comments').push().key;
+      //var newPostKey = ref.child('comments').push().key;
       var updates = {};
-      updates["/comments/" + newPostKey] = postData;
-      updates['/users/' + this.userName + '/' + newPostKey] = msg;
+      updates["/comments/" + this.userUid] = postData;
+      //updates['/users/' + this.userUid + '/' + newPostKey] = msg;
       ref.update(updates);
       this.$.txtFeedback.value="";
+      this.$.feedback.close();
     },
-    attached: function() {
-      this.user;
-      // do something with childCount ...
-    }
   });
 </script>
 

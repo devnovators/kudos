@@ -215,6 +215,7 @@
       updates["/comments/" + newPostKey] = postData;
       updates['/users/' + this.userName + '/' + newPostKey] = msg;
       ref.update(updates);
+      Polymer.dom(this.root).querySelector(idTxt).value="";
     },
     attached: function() {
   this.user;

@@ -1,12 +1,11 @@
+<link rel="import" href="kudos-login.html">
 <link rel="import" href="kudos-list.html">
 <dom-module id="kudos-demos">
   <style include="shared-styles">
     :host {
       display: block;
-
       padding: 2px;
     }
-    
     .paper-header {
       height: 60px;
       font-size: 16px;
@@ -43,21 +42,35 @@
     }
   </style>
   <template>
+    <img id="imgProfile">
+    <div class="error" hidden$="{{!error}}">[[error.code]]: [[error.message]]</div>
+    <div hidden$="{{user}}">
+      <button on-tap="signInWithGoogle">Sign In With Google</button>
+    </div>
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
       <paper-card class="rate">
         <div class="rate-content">
           <div class="card-content">
             <div class="rate-header">{{project.name}}</div>
-            <div class="rate-name">@{{project.team}}</div>
+            <div class="rate-name">
+              @{{project.team}}
+              <paper-icon-button class="rate-icon" id="{{project.id}}" data='{{project}}'
+                    icon="announcement" on-tap="openModal"></paper-icon-button>
+              <paper-tooltip for="{{project.id}}">Dejar feedback</paper-tooltip>
+            </div>
             <div>{{project.description}}</div>
-            <input type="text" id="txtProject_{{project.id}}">
-            <paper-icon-button class="rate-icon" id="{{project.id}}"
-                  icon="announcement" 
-                  on-tap="sendComment"></paper-icon-button>
           </div>
           <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
       </paper-card>
     </template>
+    <paper-dialog id="feedback" >
+      <h2 id="titleFeedback">Feedback para el proyecto</h2>
+      <paper-textarea id="txtFeedback" label="Ingresa tu feedback..."></paper-textarea>
+      <div class="buttons">
+        <paper-button id="btnFeedback" on-click="sendFeedback" dialog-confirm autofocus>Enviar</paper-button>
+        <paper-button dialog-dismiss>Cancelar</paper-button>
+      </div>
+    </paper-dialog>
   </template>
 </dom-module>
 <script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
@@ -89,8 +102,60 @@
       },
       projects:{
         type: Array,
-        notify:true
+        notify:false
       },
+    },
+    signInWithGoogle:function() {
+      if (!firebase.auth().currentUser) {
+        // [START createprovider]
+        var provider = new firebase.auth.GoogleAuthProvider();
+        // [END createprovider]
+        // [START addscopes] provider.addScope('https://www.googleapis.com/auth/plus.login');  [END addscopes]
+        // [START signin]
+        firebase.auth().signInWithPopup(provider).then(function(result) {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          var token = result.credential.accessToken;
+          // The signed-in user info.
+          this.user = result.user;
+          this.userName=result.user.displayName;
+          this.userPhoto=result.user.photoURL;
+          this.userUid=result.user.uid;
+          // [START_EXCLUDE]
+          //document.getElementById('quickstart-oauthtoken').textContent = token;
+          // [END_EXCLUDE]
+        }).catch(function(error) {
+          // Handle Errors here.
+          this.error=error;
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // The email of the user's account used.
+          var email = error.email;
+          // The firebase.auth.AuthCredential type that was used.
+          var credential = error.credential;
+          // [START_EXCLUDE]
+          if (errorCode === 'auth/account-exists-with-different-credential') {
+            alert('You have already signed up with a different auth provider for that email.');
+            // If you are using multiple auth providers on your app you should handle linking
+            // the user's accounts here.
+          } else {
+            console.error(error);
+          }
+          // [END_EXCLUDE]
+        });
+        // [END signin]
+      } else {
+        // [START signout]
+        firebase.auth().signOut();
+        // [END signout]
+      }
+      // [START_EXCLUDE]
+      //document.getElementById('quickstart-sign-in').disabled = true;
+      // [END_EXCLUDE]
+      this._firebase=firebase;
+    },
+    signOut:function() {
+        this.error = null;
+        firebase.auth().signOut();
     },
     ready:function(){
       // Initialize Firebase
@@ -114,14 +179,16 @@
         }
       });
       this.getProjects();
-      //this.$.resultList.render();
+      this.$.resultList.render();
     },
     setearValor:function(user){
-          this.user=user;
-          //console.info(user.displayName);
-          this.userName=user.displayName;
-          this.userPhoto=user.photoURL;
-          this.userUid=user.uid;
+      this.user=user;
+      console.info(user.displayName);
+      this.userName=user.displayName;
+      this.userPhoto=user.photoURL;
+      this.userUid=user.uid;
+      console.log(this.userPhoto);
+      this.$.imgProfile.src=this.userPhoto;
     },
     getProjects:function(){
       var db = this._firebase.database();
@@ -135,17 +202,19 @@
           that.push('projects', project);
         });
       });
-      //ref.off();
     },
-    sendComment:function(e){
-      var project = Polymer.dom(e).localTarget;
-      console.log(project.id);
-      var idProject =project.id;
+    openModal:function(e){
+      var btnProject = Polymer.dom(e).localTarget;
+      var project=btnProject.data;
+      this.$.btnFeedback.data=project.id;
+      this.$.titleFeedback.innerHTML="Feedback - <br>" + project.name;
+      this.$.feedback.open();
+    },
+    sendFeedback:function(){
       var db = this._firebase.database();
+      var idProject=this.$.btnFeedback.data;
+      var msg=this.$.txtFeedback.value;
       var ref = db.ref("/projects/" + idProject);
-      var idTxt='#txtProject_'+ idProject;
-      var msg=Polymer.dom(this.root).querySelector(idTxt).value;
-      console.info(this.user);
       var postData = {
         //author: this.userName,
         message: msg
@@ -155,12 +224,12 @@
       updates["/comments/" + newPostKey] = postData;
       updates['/users/' + this.userName + '/' + newPostKey] = msg;
       ref.update(updates);
-      Polymer.dom(this.root).querySelector(idTxt).value="";
+      this.$.txtFeedback.value="";
     },
     attached: function() {
-  this.user;
-  // do something with childCount ...
-}
+      this.user;
+      // do something with childCount ...
+    }
   });
 </script>
 

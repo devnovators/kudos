@@ -4,7 +4,7 @@
   <style include="shared-styles">
     :host {
       display: block;
-      padding: 2px;
+      padding: 1px;
     }
     .paper-header {
       height: 60px;
@@ -16,7 +16,6 @@
       background-color: blue !important;
     }
     paper-card {
-      width: 100%;
       margin:5px;
     }
     paper-card.rate { 
@@ -35,7 +34,7 @@
       cursor: pointer;
     }
     paper-icon-button.rate-icon:hover{
-      background-color: yellow !important;
+      background-color: #428500 !important;
       color: blue;
     }
     paper-icon-button.rate-ico[active]{
@@ -44,36 +43,75 @@
     paper-button.green {
       background-color: #4285f4;
       color: white;
-    } 
+    }
+    paper-button.feeback {
+      text-transform: capitalize;
+      background-color: var(--paper-indigo-500);
+      color: white;
+      padding: 3px;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+    .colorAviso{
+      color: #4285f4;
+      background-color: blue !important;
+      border-radius: 50%;
+    }
+    .avatar{
+      width:40px;height:40px!important;
+      border-radius: 50%;
+    }
+    .div_middle{
+      display:inline-block;
+      width:45%;
+    }
+    .div_feedback{
+      right: 0px;
+    }
+    .kudos {
+      width:95%;
+      margin: auto;
+      padding: 10px;
+    }    
   </style>
   <template>
-    <div hidden$="{{user}}" width="100%" style="text-align:center;">
+    <div hidden$="{{stateLogin}}" width="100%" style="text-align:center;">
       Bienvenido a KUDOS, para poder ingresar a votar debes identificarte. <br>
       <paper-button class="green" raised on-tap="signInWithGoogle">
-        <iron-icon icon="perm-identity"></iron-icon> Ingresar a tu cuenta
+        <iron-icon icon="perm-identity"></iron-icon> Ingresar con tu cuenta
       </paper-button>
     </div>
-    <div hidden$="{{!user}}">
-    <img id="imgProfile" style="width:40px;height:40px!important;">
-    {{user.displayName}}      
+    <div hidden$="{{!stateLogin}}">
+      <img id="imgProfile" class="avatar">
+      Bienvenido {{user.displayName}}
     </div>
 
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
       <paper-card class="rate">
         <div class="rate-content">
           <div class="card-content">
-            <div class="rate-header">{{project.name}}</div>
+            <div class="rate-header">{{project.name}}
+            </div>
             <template is="dom-if" if="{{_anyTeam(project.team)}}">
               <div class="rate-name">
-                @{{project.team}}
-                <paper-icon-button class="rate-icon" id="{{project.id}}" data='{{project}}'
-                    icon="announcement" on-tap="openModal"></paper-icon-button>
-                <paper-tooltip for="{{project.id}}">Dejar feedback</paper-tooltip>
+                <div class="div_middle">
+                  @{{project.team}}  
+                </div>
+                <div class="div_middle">
+                  <paper-button class="rate-icon feeback" id="{{project.id}}" data='{{project}}'
+                    on-tap="openModal">
+                    Deja tu feedback <iron-icon icon="announcement"></iron-icon>
+                  </paper-button>
+                </div>
               </div>
             </template>
             <div>{{project.description}}</div>
           </div>
-          <kudos-list project="{{project}}" _firebase="{{_firebase}}"></kudos-list>
+          <div class="kudos">
+            <kudos-list project="{{project}}" _firebase="{{_firebase}}" _user="{{userUid}}" on-click="_refresh"></kudos-list>  
+          </div>
       </paper-card>
     </template>
     <paper-dialog id="feedback" >
@@ -84,6 +122,7 @@
         <paper-button dialog-dismiss>Cancelar</paper-button>
       </div>
     </paper-dialog>
+    <paper-toast id="toastAlert" text="Feedback registrado correctamente."></paper-toast>
   </template>
 </dom-module>
 <script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>
@@ -101,15 +140,11 @@
         type:Object,
         notify:true
       },
-      userName: {
-        type: String,
-        notify:true
+      stateLogin:{
+        type:Boolean,
+        value:false
       },
       userUid: {
-        type: String,
-        notify:true
-      },
-      userPhoto: {
         type: String,
         notify:true
       },
@@ -124,14 +159,19 @@
       },
     },
     attached:function(){
-      console.info("attached");
+      this.stateLogin=false;
       this.loadFirebase();
-      this.getProjects();
-      this.$.resultList.render();
+    },
+    ready:function(){
+      this.config = {
+        apiKey: "AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk",
+        authDomain: "devnovators.firebaseapp.com",
+        databaseURL: "https://devnovators.firebaseio.com",
+        storageBucket: "devnovators.appspot.com",
+      };
     },
     loadFirebase:function(){
       console.info("load");
-      // Initialize Firebase
       firebase.initializeApp(this.config);
       var self=this;
       firebase.auth().onAuthStateChanged(function(user) {
@@ -143,26 +183,13 @@
       });
       this._firebase=firebase;
     },
-    ready:function(){
-      console.info("ready");
-      this.config = {
-        apiKey: "AIzaSyBiBdm3MheV4sN7lfk0WLoVDtXXxHxbbvk",
-        authDomain: "devnovators.firebaseapp.com",
-        databaseURL: "https://devnovators.firebaseio.com",
-        storageBucket: "devnovators.appspot.com",
-      };
-    },
     signInWithGoogle:function() {
       if (!firebase.auth().currentUser) {
         var provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider).then(function(result) {
           // This gives you a Google Access Token. You can use it to access the Google API.
           var token = result.credential.accessToken;
-          this.user = result.user;
-          this.userName=result.user.displayName;
-          this.userPhoto=result.user.photoURL;
-          this.userUid=result.user.uid;
-          this.getProjects();
+          this.setearValor(user);
           //document.getElementById('quickstart-oauthtoken').textContent = token;
         }).catch(function(error) {
           this.error=error;
@@ -181,14 +208,12 @@
       } else {
         firebase.auth().signOut();
       }
-      // [START_EXCLUDE]
-      //document.getElementById('quickstart-sign-in').disabled = true;
-      // [END_EXCLUDE]
       this._firebase=firebase;
     },
     signOut:function() {
         this.error = null;
         firebase.auth().signOut();
+        this.stateLogin=false;
     },
     _anyTeam:function(team){
       if (team==null || team.length==0){
@@ -199,10 +224,10 @@
     },
     setearValor:function(user){
       this.user=user;
-      this.userName=user.displayName;
-      this.userPhoto=user.photoURL;
       this.userUid=user.uid;
-      this.$.imgProfile.src=this.userPhoto;
+      this.$.imgProfile.src=user.photoURL;
+      this.stateLogin=true;
+      this.getProjects();
     },
     getProjects:function(){
       var db = this._firebase.database();
@@ -226,6 +251,7 @@
       this.$.feedback.open();
       var ref = this._firebase.database().ref("/projects/" + project.id + "/comments/" + this.userUid);
       ref.once('value').then(function(snapshot) {
+        console.log(snapshot.val());
         var msg=snapshot.val().message;
         if(msg!=null && msg.length >0){
           self.$.txtFeedback.value=msg;  
@@ -245,10 +271,15 @@
       var updates = {};
       updates["/comments/" + this.userUid] = postData;
       //updates['/users/' + this.userUid + '/' + newPostKey] = msg;
-      ref.update(updates);
+      ref.update(updates); 
+      this.getProjects();
       this.$.txtFeedback.value="";
       this.$.feedback.close();
+      this.$.toastAlert.open();
     },
+    _refresh:function(){
+      this.getProjects();
+    }
   });
 </script>
 

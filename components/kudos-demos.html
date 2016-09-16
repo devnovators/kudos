@@ -36,6 +36,7 @@
     paper-icon-button.rate-icon:hover{
       background-color: #428500 !important;
       color: blue;
+      font-size: x-small;
     }
     paper-icon-button.rate-ico[active]{
     }
@@ -46,6 +47,7 @@
     }
     paper-button.feeback {
       text-transform: capitalize;
+      font-size: x-small;
       background-color: var(--paper-indigo-500);
       color: white;
       padding: 3px;
@@ -78,14 +80,14 @@
   </style>
   <template>
     <div hidden$="{{stateLogin}}" width="100%" style="text-align:center;">
-      Bienvenido a KUDOS, para poder ingresar a votar debes identificarte. <br>
+      Bienvenido a KUDOS, para poder dejar tus agradecimientos debes identificarte:<br>
       <paper-button class="green" raised on-tap="signInWithGoogle">
-        <iron-icon icon="perm-identity"></iron-icon> Ingresar con tu cuenta
+        <iron-icon icon="perm-identity"></iron-icon> Ingresar con mi cuenta Google
       </paper-button>
     </div>
     <div hidden$="{{!stateLogin}}">
       <img id="imgProfile" class="avatar">
-      Bienvenido {{user.displayName}}
+      Bienvenido {{user.displayName}} !
     </div>
 
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
@@ -102,7 +104,7 @@
                 <div class="div_middle">
                   <paper-button class="rate-icon feeback" id="{{project.id}}" data='{{project}}'
                     on-tap="openModal">
-                    Deja tu feedback <iron-icon icon="announcement"></iron-icon>
+                    Danos feedback <iron-icon icon="announcement"></iron-icon>
                   </paper-button>
                 </div>
               </div>
@@ -115,7 +117,7 @@
       </paper-card>
     </template>
     <paper-dialog id="feedback" >
-      <h2 id="titleFeedback">Feedback para el proyecto</h2>
+      <h2 id="titleFeedback">Feedback para:</h2>
       <paper-textarea id="txtFeedback" label="Ingresa tu feedback..."></paper-textarea>
       <div class="buttons">
         <paper-button id="btnFeedback" on-click="sendFeedback" autofocus>Enviar</paper-button>
@@ -247,7 +249,7 @@
       var project=btnProject.data;
       var self=this;
       this.$.btnFeedback.data=project.id;
-      this.$.titleFeedback.innerHTML="Feedback para el proyecto  <br>" + project.name;
+      this.$.titleFeedback.innerHTML="Feedback para:<br>" + project.name;
       this.$.feedback.open();
       var ref = this._firebase.database().ref("/projects/" + project.id + "/comments/" + this.userUid);
       ref.once('value').then(function(snapshot) {

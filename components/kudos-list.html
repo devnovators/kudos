@@ -22,15 +22,17 @@
     --paper-badge-background: var(--paper-light-blue-300);
   }
   paper-button.kudo:hover {
-    background-color: #FAB96D;
+    background-color: #FDBD2C; /*#FAB96D;*/
   }
   paper-button.kudo {
-    background-color: #FFF5E0;
+    background-color: #999999; /*#FFF5E0;*/
     color: white;
-    width:40px!important;
-    height:40px!important;
-    border-radius: 50%;
-    min-width: 40px!important;
+    /*width:40px!important;
+    height:40px!important;*/
+    /*border-radius: 50%;
+    min-width: 40px!important;*/
+    font-size: x-small;
+    text-transform: none! important;
     margin: 5px; 
   } 
   paper-button.kudo[active] {
@@ -38,11 +40,11 @@
   }
 </style>
 <template>
-    <div class="card-actions">
+    <divclass="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
         <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-tap="votar">
-          <iron-icon icon="{{kudo.icon}}"></iron-icon>
-        </paper-button><span>{{abreviar(kudo.title)}}</span>
+          <iron-icon icon="{{kudo.icon}}"></iron-icon>{{kudo.title}}
+        </paper-button><!--<span>{{abreviar(kudo.title)}}</span>-->
         <paper-dialog id="{{kudo.id}}" entry-animation="scale-up-animation"
                       exit-animation="fade-out-animation">
           <h2>{{kudo.title}}</h2>

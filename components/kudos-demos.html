@@ -50,7 +50,7 @@
       font-size: x-small;
       background-color: var(--paper-indigo-500);
       color: white;
-      padding: 3px;
+      padding: 3px !important;
       --paper-button-raised-keyboard-focus: {
         background-color: var(--paper-pink-a200) !important;
         color: white !important;
@@ -87,7 +87,7 @@
     </div>
     <div hidden$="{{!stateLogin}}">
       <img id="imgProfile" class="avatar">
-      Bienvenido {{user.displayName}} !
+      ¡Bienvenido {{user.displayName}}!
     </div>
 
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
@@ -150,7 +150,7 @@
         type: String,
         notify:true
       },
-      user: {
+      user: { 
         type: Object,
         notify:true,
         value: function() { return {}; }
@@ -173,10 +173,10 @@
       };
     },
     loadFirebase:function(){
-      console.info("load");
       firebase.initializeApp(this.config);
       var self=this;
       firebase.auth().onAuthStateChanged(function(user) {
+        console.log(user.email);
         if (user) {
           self.setearValor(user);
         } else {
@@ -192,6 +192,7 @@
           // This gives you a Google Access Token. You can use it to access the Google API.
           var token = result.credential.accessToken;
           this.setearValor(user);
+          console.log(user.email);
           //document.getElementById('quickstart-oauthtoken').textContent = token;
         }).catch(function(error) {
           this.error=error;
@@ -236,12 +237,18 @@
       var ref = db.ref("/projects");
       var that = this;
       that.projects = [];
-      ref.on("value", function(snapshot) {
+      ref.once("value").then(function(snapshot) {
         snapshot.forEach(function(child) {
           var project = child.val();
           project.id=child.key;
           that.push('projects', project);
         });
+      });
+    },
+    getKudosProject:function(idProject){
+      var ref = firebase.database().db.ref("/users/" + userUid + "/" + idProject + "/kudos");
+      ref.once("value").then(function(snapshot) {
+        console.log(snapshot.val());
       });
     },
     openModal:function(e){
@@ -254,8 +261,8 @@
       var ref = this._firebase.database().ref("/projects/" + project.id + "/comments/" + this.userUid);
       ref.once('value').then(function(snapshot) {
         console.log(snapshot.val());
-        var msg=snapshot.val().message;
-        if(msg!=null && msg.length >0){
+        if(snapshot.val()!=null){
+          var msg=snapshot.val().message;
           self.$.txtFeedback.value=msg;  
         }
       });
@@ -264,24 +271,24 @@
       var db = this._firebase.database();
       var idProject=this.$.btnFeedback.data;
       var msg=this.$.txtFeedback.value;
-      var ref = db.ref("/projects/" + idProject);
+      var ref = db.ref("/users/" + this.userUid);
       var postData = {
         //author: this.userUid,
         message: msg
       };
       //var newPostKey = ref.child('comments').push().key;
       var updates = {};
-      updates["/comments/" + this.userUid] = postData;
+      updates["/" +idProject] = postData;
       //updates['/users/' + this.userUid + '/' + newPostKey] = msg;
       ref.update(updates); 
-      this.getProjects();
+      //this.getProjects();
       this.$.txtFeedback.value="";
       this.$.feedback.close();
       this.$.toastAlert.open();
     },
     _refresh:function(){
-      this.getProjects();
-    }
+      //this.getProjects();
+    },
   });
 </script>
 

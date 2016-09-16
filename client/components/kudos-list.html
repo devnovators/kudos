@@ -22,42 +22,50 @@
     --paper-badge-background: var(--paper-light-blue-300);
   }
   paper-button.kudo:hover {
-    background-color: #FAB96D;
+    background-color: #FDBD2C; /*#FAB96D;*/
   }
   paper-button.kudo {
-    background-color: #FFF5E0;
+    background-color: #999999; /*#FFF5E0;*/
     color: white;
-    width:40px!important;
-    height:40px!important;
-    border-radius: 50%;
-    min-width: 40px!important;
+    min-width: 85px !important;
+    /*width:40px!important;
+    height:40px!important;*/
+    /*border-radius: 50%;
+    min-width: 40px!important;*/
+    font-size: x-small;
+    text-transform: none! important;
     margin: 5px; 
+    padding: 2px !important;
   } 
   paper-button.kudo[active] {
     background-color: #82C82D;
   }
 </style>
 <template>
-    <div class="card-actions">
+    <divclass="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
-        <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-tap="votar">
-          <iron-icon icon="{{kudo.icon}}"></iron-icon>
-        </paper-button><span>{{abreviar(kudo.title)}}</span>
-        <paper-dialog id="{{kudo.id}}" entry-animation="scale-up-animation"
-                      exit-animation="fade-out-animation">
-          <h2>{{kudo.title}}</h2>
-          <div>{{kudo.description}}</div>
-        </paper-dialog>
+        {{verifyActive(kudo.id)}} 
+        <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-click="valorar">
+          <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
+        </paper-button><!--<span>{{abreviar(kudo.title)}}</span>-->
         <paper-tooltip for="{{kudo.id}}" position="top" style="max-width:100px;">{{kudo.title}}<br> {{kudo.description}}</paper-tooltip>
         <!--paper-badge for="{{kudo.id}}" label="{{kudo.count}}" class="blue"></paper-badge-->
       </template>
     </div>
+    <paper-dialog id="dialogKudo" entry-animation="scale-up-animation"
+                  exit-animation="fade-out-animation">
+      <h2></h2>
+      <div></div>
+    </paper-dialog>
 </template>
 </dom-module>
 <script>
   Polymer({
     is: 'kudos-list',
     properties:{
+      _user:{
+        type:String
+      },
       project:{
         type:Array,
         notify: true
@@ -66,30 +74,46 @@
         type:Array,
         notify: true
       },
-      _firebase:Object,
-      _user:{
-        type:String
+      kudosUser:{
+        type:Array,
+        notify: true
       }
     },
     attached:function(){
+      this.getKudosUser();
       this.getKudos();
+    },
+    getKudosUser:function(){
+      var self = this;
+      self.kudosUser=new Array();
+      firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
+        snapshot.forEach(function(child) {
+          var valor="{" + child.key + ": " + child.val() + "}";
+          self.push('kudosUser',valor);
+        });
+      });
+    },
+    verifyActive:function(idKudo){
+      var state="";
+      if (!(typeof this.kudosUser[idKudo] === "undefined")){
+        console.info("encontrado: " + this.kudosUser);
+        state="active";
+      }
+      return state;
     },
     getKudos:function(){
       var self = this;
       var projKudos = this.project.kudos;
-      this.kudos = [];
-      //var template = document.querySelector('tmtKudo'); // Use specific selector here
-      this._firebase.database().ref('/kudos').once('value').then(function(snapshot) {
+      var _kudosUser = this.kudosUser;
+      self.kudos = [];
+      firebase.database().ref('/kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
           var kudo = child.val();
-          kudo.type = "plus";
-          kudo.toggle = false;
-          self._firebase.database().ref('/users').child(self._user).child('votaciones').child(self.project.id).child('kudos').orderByChild("voto").equalTo(child.key).on("child_added", function(kudosUsuario) {
-            kudo.type = "minus";
-            kudo.usuarioKey = kudosUsuario.key;
-            kudo.toggle = true;
-            //template.iterator_.updateIteratedValue(); // Force Polymer to refresh template
-          });
+          kudo.active="";
+          if (!(typeof _kudosUser[child.key] === "undefined")){
+            console.info(_kudosUser);
+            kudo.active=_kudosUser[child.key];  
+          }          
           kudo.count=0;
           if (projKudos && !(typeof projKudos[child.key] === "undefined")){
             kudo.count=projKudos[child.key];  
@@ -98,14 +122,17 @@
         });
       });
     },
-    votar:function(e) {
+    valorar:function(e) {
       var kudoSeleccionado = e.model['__data__'];
       var idKudo = kudoSeleccionado.kudo.id;
+      var idBtnKudo=this.$$('#'+idKudo);
       var voto = 1;
-      if (kudoSeleccionado.kudo.type === "minus"){
+      //if (kudoSeleccionado.kudo.type === "minus"){
+      console.info(idBtnKudo.active);
+      if (!idBtnKudo.active){
         voto = -1;  
       }
-      var postRef = this._firebase.database().ref('/projects').child(this.project.id).child('kudos').child(idKudo);
+      var postRef = firebase.database().ref('/projects').child(this.project.id).child('kudos').child(idKudo);
       postRef.transaction(function(votoActual) {
         if (votoActual) {
           return votoActual+voto;
@@ -113,19 +140,23 @@
           return 1;
         }
       });
-      var refControl = this._firebase.database().ref('/users').child(this._user).child('votaciones').child(this.project.id).child('kudos');
+      var refControl = firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos');
       if(voto > 0) {
+        /*
         var nuevoElemnto = refControl.push();
         nuevoElemnto.set({
           voto: idKudo
-        });
-        kudoSeleccionado.kudo.usuarioKey = nuevoElemnto.key;
-        kudoSeleccionado.kudo.type = "minus";
-        this.$[kudoSeleccionado.kudo.id].open();
+        });*/
+        var updates = {};
+        updates["/" +idKudo] = true;
+        refControl.update(updates); 
+        //kudoSeleccionado.kudo.usuarioKey = nuevoElemnto.key;
+        //kudoSeleccionado.kudo.type = "minus";
+        //this.$[kudoSeleccionado.kudo.id].open();
       } else {
-        this._firebase.database().ref('/users').child(this._user).child('votaciones').child(this.project.id).child('kudos').child(kudoSeleccionado.kudo.usuarioKey).remove();
-        kudoSeleccionado.kudo.usuarioKey = "";
-        kudoSeleccionado.kudo.type = "plus";
+        firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').child(idKudo).remove();
+        //kudoSeleccionado.kudo.usuarioKey = "";
+        //kudoSeleccionado.kudo.type = "plus";
       }
     },
     abreviar: function (input) {

@@ -246,7 +246,7 @@
       });
     },
     getKudosProject:function(idProject){
-      var ref = firebase.database().db.ref("/users/" + userUid + "/" + idProject + "/kudos");
+      var ref = firebase.database().db.ref("/users/" + this.userUid + "/" + idProject + "/kudos");
       ref.once("value").then(function(snapshot) {
         console.log(snapshot.val());
       });
@@ -258,9 +258,8 @@
       this.$.btnFeedback.data=project.id;
       this.$.titleFeedback.innerHTML="Feedback para:<br>" + project.name;
       this.$.feedback.open();
-      var ref = this._firebase.database().ref("/projects/" + project.id + "/comments/" + this.userUid);
+      var ref = firebase.database().ref("/users/" + this.userUid + "/" + project.id +  "/comments");
       ref.once('value').then(function(snapshot) {
-        console.log(snapshot.val());
         if(snapshot.val()!=null){
           var msg=snapshot.val().message;
           self.$.txtFeedback.value=msg;  
@@ -278,7 +277,7 @@
       };
       //var newPostKey = ref.child('comments').push().key;
       var updates = {};
-      updates["/" +idProject] = postData;
+      updates["/" +idProject + "/comments"] = postData;
       //updates['/users/' + this.userUid + '/' + newPostKey] = msg;
       ref.update(updates); 
       //this.getProjects();

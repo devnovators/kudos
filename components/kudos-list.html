@@ -44,7 +44,8 @@
 <template>
     <divclass="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
-        <paper-button class="kudo" toggles raised {{kudo.active}} id="{{kudo.id}}" on-click="valorar">
+        {{verifyActive(kudo.id)}} 
+        <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-click="valorar">
           <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
         </paper-button><!--<span>{{abreviar(kudo.title)}}</span>-->
         <paper-tooltip for="{{kudo.id}}" position="top" style="max-width:100px;">{{kudo.title}}<br> {{kudo.description}}</paper-tooltip>
@@ -85,13 +86,20 @@
     getKudosUser:function(){
       var self = this;
       self.kudosUser=new Array();
-      //console.info("self._user => "+self._user + " self.project.id => " + self.project.id);
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
           var valor="{" + child.key + ": " + child.val() + "}";
           self.push('kudosUser',valor);
         });
       });
+    },
+    verifyActive:function(idKudo){
+      var state="";
+      if (!(typeof this.kudosUser[idKudo] === "undefined")){
+        console.info("encontrado: " + this.kudosUser);
+        state="active";
+      }
+      return state;
     },
     getKudos:function(){
       var self = this;
@@ -102,8 +110,6 @@
         snapshot.forEach(function(child) {
           var kudo = child.val();
           kudo.active="";
-          var index=self.kudosUser.indexOf(child.key)
-          console.info(index);
           if (!(typeof _kudosUser[child.key] === "undefined")){
             console.info(_kudosUser);
             kudo.active=_kudosUser[child.key];  

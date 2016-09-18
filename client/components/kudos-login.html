@@ -27,7 +27,7 @@
           };
         firebase.initializeApp(config);
         var uiConfig = {
-                'signInSuccessUrl': '/widget',
+                'signInSuccessUrl': '/index.html',
                 'callbacks': {'signInSuccess': function(user, credential, redirectUrl) {
                 handleSignedInUser(user);
                 return true;}

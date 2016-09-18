@@ -1,6 +1,17 @@
 <link rel="import" href="kudos-login.html">
 <link rel="import" href="kudos-list.html">
+<link rel="import" href="../bower_components/platinum-sw/platinum-sw-elements.html">
 <dom-module id="kudos-demos">
+  <platinum-sw-register
+        auto-register
+        skip-waiting
+        clients-claim
+        reload-on-install
+        href="sw-import.js">
+      <platinum-sw-cache
+          default-cache-strategy="networkFirst">
+      </platinum-sw-cache>
+    </platinum-sw-register>
   <style include="shared-styles">
     :host {
       display: block;

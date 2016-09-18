@@ -1,4 +1,15 @@
+<link rel="import" href="../bower_components/platinum-sw/platinum-sw-elements.html">
 <dom-module id="kudos-login">
+  <platinum-sw-register
+        auto-register
+        skip-waiting
+        clients-claim
+        reload-on-install
+        href="sw-import.js">
+      <platinum-sw-cache
+          default-cache-strategy="networkFirst">
+      </platinum-sw-cache>
+    </platinum-sw-register>
     <div id="firebaseui-auth-container"></div>
 </dom-module>
 <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>

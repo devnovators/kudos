@@ -89,8 +89,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </head>
   <body>
-    <platinum-sw-register-register skip-waiting clients-claim reload-on-install href="sw-import.js">
-      <platinum-sw-cache-cache-strategy="networkFirst"></platinum-sw-cache>
+    <platinum-sw-register auto-register skip-waiting clients-claim reload-on-install href="sw-import.js">
+      <platinum-sw-cache default-cache-strategy="networkFirst"></platinum-sw-cache>
     </platinum-sw-register>
     <kudos-app></kudos-app>
   </body>

@@ -28,15 +28,9 @@
         firebase.initializeApp(config);
         var uiConfig = {
                 'signInSuccessUrl': '/widget',
-                'callbacks': {
-                  'signInSuccess': function(user, credential, redirectUrl) {
-                    if (window.opener) {
-                      window.close();
-                      return false;
-                    } else {
-                      return true;
-                    }
-                  }
+                'callbacks': {'signInSuccess': function(user, credential, redirectUrl) {
+                handleSignedInUser(user);
+                return true;}
                 },
                 'signInOptions': [
                   firebase.auth.GoogleAuthProvider.PROVIDER_ID

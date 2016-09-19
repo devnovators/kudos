@@ -78,16 +78,24 @@
     }
     .div_middle{
       display:inline-block;
-      width:45%;
+      width:63%;
+      padding: 0px;
     }
     .div_feedback{
       right: 0px;
+      width:42%;
+      text-align:right;
+      padding: 0px;
     }
     .kudos {
       width:95%;
       margin: auto;
       padding: 10px;
     }    
+    .team{
+      background-color: #89d1f3;
+      border-radius: 50%;
+    }
   </style>
   <template>
     <div hidden$="{{stateLogin}}" width="100%" style="text-align:center;">
@@ -107,23 +115,26 @@
           <div class="card-content">
             <div class="rate-header">{{project.name}}
             </div>
-            <template is="dom-if" if="{{_anyTeam(project.team)}}">
+            
               <div class="rate-name">
                 <div class="div_middle">
                   @{{project.team}}  
+                  <template is="dom-if" if="{{project.showTeam}}">
+                    <paper-icon-button icon="social:people" class="team" on-click="openTeam"></paper-icon-button>
+                  </template>
                 </div>
-                <div class="div_middle">
+                <div class="div_right">
                   <paper-button class="rate-icon feeback" id="{{project.id}}" data='{{project}}'
                     on-tap="openModal">
                     Danos feedback <iron-icon icon="announcement"></iron-icon>
                   </paper-button>
                 </div>
               </div>
-            </template>
+            
             <div>{{project.description}}</div>
           </div>
           <div class="kudos">
-            <kudos-list project="{{project}}" _firebase="{{_firebase}}" _user="{{userUid}}" on-click="_refresh"></kudos-list>  
+            <kudos-list project="{{project}}" _firebase="{{_firebase}}" _user="{{userUid}}"></kudos-list>  
           </div>
       </paper-card>
     </template>
@@ -133,6 +144,16 @@
       <div class="buttons">
         <paper-button id="btnFeedback" on-click="sendFeedback" autofocus>Enviar</paper-button>
         <paper-button dialog-dismiss>Cancelar</paper-button>
+      </div>
+    </paper-dialog>
+    <paper-dialog id="team" >
+      <h2 id="titleTeam"></h2>
+      <div id="lblPO"><h3>Product Owner: </h3><span id="tPO"></span></div>
+      <div id="lblSM"><h3>Scrum Master: </h3><span id="tSM"></span></div>
+      <div id="lblTeam"><h3>Team: </h3><span id="tTeam"></span></div>
+      <div id="lblProviders"><h3>Providers: </h3> <span id="tProviders"></span></div>
+      <div class="buttons">
+        <paper-button dialog-dismiss autofocus>Aceptar</paper-button>
       </div>
     </paper-dialog>
     <paper-toast id="toastAlert" text="Feedback registrado correctamente."></paper-toast>
@@ -238,8 +259,8 @@
     },
     setearValor:function(user){
       this.user=user;
-      this.userUid=user.uid;
-      this.$.imgProfile.src=user.photoURL;
+      this.userUid=user.email;
+      this.$.imgProfile.src=user.photoURL || '../images/avatar_login.png';
       this.stateLogin=true;
       this.getProjects();
     },
@@ -271,16 +292,18 @@
       this.$.feedback.open();
       var ref = firebase.database().ref("/users/" + this.userUid + "/" + project.id +  "/comments");
       ref.once('value').then(function(snapshot) {
+        var msg="";
         if(snapshot.val()!=null){
-          var msg=snapshot.val().message;
-          self.$.txtFeedback.value=msg;  
+          snapshot.val().message;
         }
+        self.$.txtFeedback.value=msg; 
       });
     },
     sendFeedback:function(){
       var db = this._firebase.database();
       var idProject=this.$.btnFeedback.data;
       var msg=this.$.txtFeedback.value;
+      if(msg.trim().length==0){this.$.feedback.close();return;}
       var ref = db.ref("/users/" + this.userUid);
       var postData = {
         //author: this.userUid,
@@ -288,6 +311,7 @@
       };
       //var newPostKey = ref.child('comments').push().key;
       var updates = {};
+      
       updates["/" +idProject + "/comments"] = postData;
       //updates['/users/' + this.userUid + '/' + newPostKey] = msg;
       ref.update(updates); 
@@ -296,8 +320,40 @@
       this.$.feedback.close();
       this.$.toastAlert.open();
     },
-    _refresh:function(){
-      //this.getProjects();
+    openTeam:function(e){
+      var btnTeam = Polymer.dom(e).localTarget;
+      var team=btnTeam.data;
+      var self=this;
+      var ref = firebase.database().ref("/teams/" + team);
+      ref.once('value').then(function(snapshot) {
+        if(snapshot.val() !=null){
+          self.$.titleTeam.innerHTML=snapshot.val().title;
+          self.$.tTeam.innerHTML=snapshot.val().team;
+          if(snapshot.val().po !=null){
+            self.$.tPO.innerHTML=snapshot.val().po;  
+            self.$.lblPO.hidden=false;
+          }else{
+            self.$.tPO.innerHTML="";
+            self.$.lblPO.hidden=true;
+          }
+          if(snapshot.val().sm !=null){
+            self.$.tSM.innerHTML=snapshot.val().sm;  
+            self.$.lblSM.hidden=false;
+          }else{
+            self.$.tSM.innerHTML="";
+            self.$.lblSM.hidden=true;
+          }
+          
+          if(snapshot.val().providers !=null){
+            self.$.tProviders.innerHTML=snapshot.val().providers;  
+            self.$.lblProviders.hidden=false;
+          }else{
+            self.$.tProviders.innerHTML="";  
+            self.$.lblProviders.hidden=true;
+          }
+          self.$.team.open();
+        }
+      });
     },
   });
 </script>

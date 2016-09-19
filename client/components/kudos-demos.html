@@ -121,10 +121,10 @@
                 <div class="div_middle">
                   @{{project.team}}  
                   <template is="dom-if" if="{{project.showTeam}}">
-                    <paper-icon-button icon="social:people" class="team" on-click="openTeam"></paper-icon-button>
+                    <paper-icon-button icon="social:people" class="team" on-click="openTeam" data="{{project.team}}"></paper-icon-button>
                   </template>
                 </div>
-                <div class="div_right">
+                <div class="div_feedback">
                   <paper-button class="rate-icon feeback" id="{{project.id}}" data='{{project}}'
                     on-tap="openModal">
                     Danos feedback <iron-icon icon="announcement"></iron-icon>

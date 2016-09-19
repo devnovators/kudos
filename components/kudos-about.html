@@ -13,7 +13,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="kudos-about">
-  <template>
     <style include="shared-styles">
       :host {
         display: block;
@@ -29,21 +28,105 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           width: 100%;
           height: auto;
       }
+      paper-button.kudo {
+        background-color: #999999;
+        color: white;
+        min-width: 85px !important;
+        font-size: x-small;
+        text-transform: none! important;
+        margin: 5px; 
+        padding: 2px !important;
+      }
+      paper-button.kudo[active] {
+        background-color: #82C82D;
+      }
     </style>
-
+  <template> 
     <div class="card">
       <h1>Acerca de kudos</h1>
-      <p>kudos, una forma de agradecer, aplaudir y reconocer el aporte de cada equipo por generar soluciones increíbles.</p>
+      <p>Kudos, una forma de agradecer, aplaudir y reconocer el aporte de cada equipo por generar soluciones increíbles.</p>
+      <h1>¿Cómo agradecer a un equipo?</h1>
+      <p>Para poder agradecer a un equipo es muy sencillo, en cada descripción de los proyectos encontrarás unos iconos con las categorías que puedes agradecerles.</p>
+      <paper-button id="kudoejemplo" class="kudo" toggles raised>
+        <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
+      </paper-button> (Ejemplo de como agredecer).
+      <h1>¿Qué categorías se pueden agradecer?</h1>
+      <template id="kudos-disponibles" is="dom-repeat" items="{{kudos}}" as="kudo">
+        <paper-button id="{{kudo.id}}" class="kudo" toggles raised on-click="describirKudo">
+          <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
+        </paper-button>
+      </template>
+      <template is="dom-if" if="{{descripcionVisible}}">
+        <div style="padding-left: 7px;">
+          <br><span style="color: #0079C1; font-weight: bold;">Se agredece al equipo por:<br>{{descripcion}}</span>
+        </div>
+      </template>
     </div>
     <div class="card">
       <h1>Equipo desarrollador</h1>
-      <iron-image style="width:100%; height:400px;" src="../images/dev.jpg"></iron-image>
+      <iron-image style="width: 100%; height: 100%;" src="../images/dev.jpg"></iron-image>
     </div>
   </template>
 
   <script>
     Polymer({
-      is: 'kudos-about'
+      is: 'kudos-about',
+      properties:{
+        kudos: {
+          type: Array,
+          notify: true
+        },
+        kudo: {
+          type:Object,
+          notify: true,
+          value: function() { return {}; }
+        },
+        botonSeleccionado: {
+          type:Object,
+          notify: true,
+          value: function() { return {}; }
+        },
+        descripcionVisible: { 
+          type: Boolean,
+          value: false
+        },
+        descripcion: String,
+      },
+      ready: function() {        
+      },
+      attached: function() {
+        this.getKudos();
+      },
+      getKudos:function(){
+        var consulta = this;
+        consulta.kudos = [];
+        firebase.database().ref('/kudos').once('value').then(function(listado) {
+          listado.forEach(function(child) {
+            var kudo = child.val();
+            consulta.push('kudos', kudo);            
+          });
+          if(consulta.kudos){
+            consulta.set('kudo', consulta.kudos[0]);
+          }
+        });
+      },
+      describirKudo: function(event) {        
+        var kudoSeleccionado = event.model['__data__'];
+        var idKudo = kudoSeleccionado.kudo.id;
+        var idBtnKudo = this.$$('#'+idKudo);
+        if(idBtnKudo != this.botonSeleccionado){
+          if(this.botonSeleccionado != null) {
+            this.botonSeleccionado.active = false;
+          }
+        } else {
+          this.botonSeleccionado = {};
+        }
+        this.botonSeleccionado = idBtnKudo;
+        this.descripcionVisible = idBtnKudo.active;
+        if(idBtnKudo.active){
+          this.descripcion = kudoSeleccionado.kudo.description;
+        }
+      },
     });
   </script>
 </dom-module>

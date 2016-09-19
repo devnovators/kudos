@@ -42,7 +42,7 @@
   }
 </style>
 <template>
-    <divclass="card-actions">
+    <div class="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
         {{verifyActive(kudo.id)}} 
         <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-click="valorar">

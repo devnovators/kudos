@@ -295,7 +295,7 @@
       ref.once('value').then(function(snapshot) {
         var msg="";
         if(snapshot.val()!=null){
-          snapshot.val().message;
+          msg=snapshot.val().message;
         }
         self.$.txtFeedback.value=msg; 
       });

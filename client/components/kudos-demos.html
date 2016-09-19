@@ -78,12 +78,13 @@
     }
     .div_middle{
       display:inline-block;
-      width:63%;
+      width:55%;
       padding: 0px;
     }
     .div_feedback{
+      display:inline-block;
       right: 0px;
-      width:42%;
+      width:40%;
       text-align:right;
       padding: 0px;
     }
@@ -259,7 +260,7 @@
     },
     setearValor:function(user){
       this.user=user;
-      this.userUid=user.email;
+      this.userUid=user.email.toString().replace(/[@.]/g,'_');  ;
       this.$.imgProfile.src=user.photoURL || '../images/avatar_login.png';
       this.stateLogin=true;
       this.getProjects();
@@ -328,7 +329,7 @@
       ref.once('value').then(function(snapshot) {
         if(snapshot.val() !=null){
           self.$.titleTeam.innerHTML=snapshot.val().title;
-          self.$.tTeam.innerHTML=snapshot.val().team;
+          self.$.tTeam.innerHTML=snapshot.val().team.toString().replace(/[,]/g,', ');  ;
           if(snapshot.val().po !=null){
             self.$.tPO.innerHTML=snapshot.val().po;  
             self.$.lblPO.hidden=false;
@@ -345,7 +346,7 @@
           }
           
           if(snapshot.val().providers !=null){
-            self.$.tProviders.innerHTML=snapshot.val().providers;  
+            self.$.tProviders.innerHTML=snapshot.val().providers.toString().replace(/[,]/g,', ');  
             self.$.lblProviders.hidden=false;
           }else{
             self.$.tProviders.innerHTML="";  

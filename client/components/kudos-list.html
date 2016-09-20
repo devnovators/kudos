@@ -88,26 +88,28 @@
       kudosUser:{
         type:Array,
         notify: true,
-        observer: 'getKudos'
       }
     },
     attached:function(){
       this.getKudosUser();
-      //this.getKudos();
+      this.getKudos();
     },
     getKudosUser:function(){
       var self = this;
       //self.kudosUser=[];
-      console.info('leyendo kudoUser ===============1== ' + this._user);
+      console.info('===============1== ' + this._user + " - project: " + this.project.id);
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         console.log(snapshot.val());
         snapshot.forEach(function(child) {
           console.info('leyendo kudoUser ===============2');
+          var _active=false;
+          var _idKudo=child;
           if(child.val()!=null){
-            console.log(child.val());
-            var valor="{" + child.key + ": " + child.val() + "}";
-            self.push('kudosUser',valor);
+            console.log(child.key());
+            _active= child.val();
+            that.$$('#' + _idKudo).active=_active;
           }
+          
         });
       });
       console.info('leyendo kudoUser ===============fin');
@@ -125,7 +127,6 @@
       var projKudos = this.project.kudos;
       var _kudosUser = this.kudosUser;
       self.kudos = [];
-      console.info('leyendo kudo------------1');
       firebase.database().ref('/kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
           var kudo = child.val();
@@ -143,7 +144,6 @@
           self.push('kudos', kudo);
         });
       });
-      console.info('leyendo kudo------------fin');
     },
     valorar:function(e) {
       var kudoSeleccionado = e.model['__data__'];

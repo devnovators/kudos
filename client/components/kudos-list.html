@@ -103,7 +103,7 @@
         snapshot.forEach(function(child) {
           console.info('leyendo kudoUser ===============2');
           var _active=false;
-          var _idKudo=child;
+          var _idKudo=child.key;
           if(child.val()!=null){
             console.log(child.key);
             _active= child.val();

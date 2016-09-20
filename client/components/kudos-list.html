@@ -116,8 +116,6 @@
           if (projKudos && !(typeof projKudos[child.key] === "undefined")){
             kudo.count=projKudos[child.key];  
           }
-          console.info('leyendo kudo---proceso');
-          console.log(child.val());
           self.push('kudos', kudo);
         });
       });
@@ -127,7 +125,6 @@
       var idKudo = kudoSeleccionado.kudo.id;
       var idBtnKudo=this.$$('#'+idKudo);
       var voto = 1;
-      console.info(idBtnKudo.active);
       if (!idBtnKudo.active){
         voto = -1;  
       }

@@ -44,7 +44,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 <!--<link rel="import" href="../bower_components/platinum-sw/platinum-sw-elements.html">-->
-
+<link rel="import" href="./components/kudos-about.html">
+<link rel="import" href="./components/kudos-demos.html">
 
 <dom-module id="kudos-app">
   <!--<platinum-sw-register-->
@@ -91,9 +92,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-tab active>Votación</paper-tab>
     <paper-tab>Acerca de Kudos</paper-tab>
   </paper-tabs>
-
-  {{selected}}
-
   <iron-pages selected="{{selected}}">
     <section active one flex vertical layout>
       <kudos-demos></kudos-demos>

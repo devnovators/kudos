@@ -105,7 +105,7 @@
           var _active=false;
           var _idKudo=child;
           if(child.val()!=null){
-            console.log(child.key());
+            console.log(child.key);
             _active= child.val();
             that.$$('#' + _idKudo).active=_active;
           }
@@ -130,11 +130,11 @@
       firebase.database().ref('/kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
           var kudo = child.val();
-          kudo.active="";
-          if (!(typeof _kudosUser[child.key] === "undefined")){
-            console.info(_kudosUser);
-            kudo.active=_kudosUser[child.key];  
-          }          
+          // kudo.active="";
+          // if (!(typeof _kudosUser[child.key] === "undefined")){
+          //   console.info(_kudosUser);
+          //   kudo.active=_kudosUser[child.key];  
+          // }          
           kudo.count=0;
           if (projKudos && !(typeof projKudos[child.key] === "undefined")){
             kudo.count=projKudos[child.key];  

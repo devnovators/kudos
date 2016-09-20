@@ -55,7 +55,6 @@
 <template>
     <divclass="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
-        {{verifyActive(kudo.id)}} 
         <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-click="valorar">
           <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
         </paper-button><!--<span>{{abreviar(kudo.title)}}</span>-->
@@ -91,8 +90,8 @@
       }
     },
     attached:function(){
-      this.getKudosUser();
       this.getKudos();
+      this.async(this.getKudosUser());
     },
     getKudosUser:function(){
       var self = this;
@@ -106,7 +105,10 @@
           if(child.val()!=null){
             console.log(child.key);
             _active= child.val();
-            self.$$('#' + _idKudo).active=_active;
+            if(self.$$('#' + _idKudo)!=null){
+              console.info(self.$$('#' + _idKudo));
+              self.$$('#' + _idKudo).active=_active;
+            }
           }
           
         });

@@ -101,7 +101,7 @@
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         console.log(snapshot.numChildren());
         snapshot.forEach(function(child) {
-          console.info('leyendo kudoUser');
+          console.info('leyendo kudoUser ===============');
           console.log(child.val());
           var valor="{" + child.key + ": " + child.val() + "}";
           self.push('kudosUser',valor);

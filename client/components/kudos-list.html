@@ -84,10 +84,6 @@
         type:Array,
         notify: true
       },
-      kudosUser:{
-        type:Array,
-        notify: true,
-      }
     },
     attached:function(){
       this.getKudos();
@@ -95,11 +91,9 @@
     },
     getKudosUser:function(){
       var self = this;
-      //self.kudosUser=[];
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         console.log(snapshot.val());
         snapshot.forEach(function(child) {
-          console.info('leyendo kudoUser ===============2');
           var _active=false;
           var _idKudo=child.key;
           if(child.val()!=null){
@@ -114,27 +108,13 @@
         });
       });
     },
-    verifyActive:function(idKudo){
-      var state="";
-      if (!(typeof this.kudosUser[idKudo] === "undefined")){
-        console.info("encontrado: " + this.kudosUser);
-        state="active";
-      }
-      return state;
-    },
     getKudos:function(){
       var self = this;
       var projKudos = this.project.kudos;
-      var _kudosUser = this.kudosUser;
       self.kudos = [];
       firebase.database().ref('/kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
           var kudo = child.val();
-          // kudo.active="";
-          // if (!(typeof _kudosUser[child.key] === "undefined")){
-          //   console.info(_kudosUser);
-          //   kudo.active=_kudosUser[child.key];  
-          // }          
           kudo.count=0;
           if (projKudos && !(typeof projKudos[child.key] === "undefined")){
             kudo.count=projKudos[child.key];  
@@ -150,7 +130,6 @@
       var idKudo = kudoSeleccionado.kudo.id;
       var idBtnKudo=this.$$('#'+idKudo);
       var voto = 1;
-      //if (kudoSeleccionado.kudo.type === "minus"){
       console.info(idBtnKudo.active);
       if (!idBtnKudo.active){
         voto = -1;  
@@ -165,21 +144,11 @@
       });
       var refControl = firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos');
       if(voto > 0) {
-        /*
-        var nuevoElemnto = refControl.push();
-        nuevoElemnto.set({
-          voto: idKudo
-        });*/
         var updates = {};
         updates["/" +idKudo] = true;
         refControl.update(updates); 
-        //kudoSeleccionado.kudo.usuarioKey = nuevoElemnto.key;
-        //kudoSeleccionado.kudo.type = "minus";
-        //this.$[kudoSeleccionado.kudo.id].open();
       } else {
         firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').child(idKudo).remove();
-        //kudoSeleccionado.kudo.usuarioKey = "";
-        //kudoSeleccionado.kudo.type = "plus";
       }
     },
     abreviar: function (input) {

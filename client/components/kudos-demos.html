@@ -336,7 +336,6 @@
             self.$.tSM.innerHTML="";
             self.$.lblSM.hidden=true;
           }
-          
           if(snapshot.val().providers !=null){
             self.$.tProviders.innerHTML=snapshot.val().providers.toString().replace(/[,]/g,', ');  
             self.$.lblProviders.hidden=false;

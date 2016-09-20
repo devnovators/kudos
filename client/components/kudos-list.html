@@ -93,15 +93,10 @@
       var self = this;
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {
-          var _active=false;
           var _idKudo=child.key;
-          if(child.val()!=null){
-            _active= child.val();
-            if(self.$$('#' + _idKudo)!=null){
-              self.$$('#' + _idKudo).active=_active;
-            }
+          if(child.val()!=null && self.$$('#' + _idKudo)!=null){
+            self.$$('#' + _idKudo).active=child.val();
           }
-          
         });
       });
     },

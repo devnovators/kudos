@@ -55,6 +55,7 @@
 <template>
     <divclass="card-actions">
       <template id="tmtKudo" is="dom-repeat" items="{{kudos}}" as="kudo">
+        {{getKudosUser()}}
         <paper-button class="kudo" toggles raised id="{{kudo.id}}" on-click="valorar">
           <iron-icon icon="{{kudo.icon}}"></iron-icon> {{kudo.title}}
         </paper-button><!--<span>{{abreviar(kudo.title)}}</span>-->
@@ -87,9 +88,10 @@
     },
     attached:function(){
       this.getKudos();
-      this.async(this.getKudosUser());
+      //this.async(this.getKudosUser());
     },
     getKudosUser:function(){
+      console.info('iniciando get kudos');
       var self = this;
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {

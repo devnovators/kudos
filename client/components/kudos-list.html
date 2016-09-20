@@ -98,7 +98,7 @@
     getKudosUser:function(){
       var self = this;
       //self.kudosUser=[];
-      console.info('leyendo kudoUser ===============1');
+      console.info('leyendo kudoUser ===============1== ' + this._user);
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         console.log(snapshot.val());
         snapshot.forEach(function(child) {

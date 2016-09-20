@@ -209,7 +209,6 @@
       firebase.initializeApp(this.config);
       var self=this;
       firebase.auth().onAuthStateChanged(function(user) {
-        console.log(user.email);
         if (user) {
           self.setearValor(user);
         } else {
@@ -225,7 +224,6 @@
           // This gives you a Google Access Token. You can use it to access the Google API.
           var token = result.credential.accessToken;
           this.setearValor(user);
-          console.log(user.email);
           //document.getElementById('quickstart-oauthtoken').textContent = token;
         }).catch(function(error) {
           this.error=error;

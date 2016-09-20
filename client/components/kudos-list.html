@@ -91,7 +91,6 @@
       //this.async(this.getKudosUser());
     },
     getKudosUser:function(){
-      console.info('iniciando get kudos');
       var self = this;
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         snapshot.forEach(function(child) {

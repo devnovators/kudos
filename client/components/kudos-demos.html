@@ -97,6 +97,9 @@
       background-color: #89d1f3;
       border-radius: 50%;
     }
+    .titleProject{
+      color: #006ec1;
+    }
   </style>
   <template>
     <div hidden$="{{stateLogin}}" width="100%" style="text-align:center;">
@@ -114,7 +117,7 @@
       <paper-card class="rate">
         <div class="rate-content">
           <div class="card-content">
-            <div class="rate-header">{{project.name}}
+            <div class="rate-header titleProject">{{project.name}}
             </div>
             
               <div class="rate-name">
@@ -157,7 +160,7 @@
         <paper-button dialog-dismiss autofocus>Aceptar</paper-button>
       </div>
     </paper-dialog>
-    <paper-toast id="toastAlert" text="Feedback registrado correctamente."></paper-toast>
+    <paper-toast id="toastAlert" text="Gracias por tu feedback"></paper-toast>
   </template>
 </dom-module>
 <script src="https://www.gstatic.com/firebasejs/3.0.4/firebase.js"></script>

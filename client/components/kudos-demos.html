@@ -2,7 +2,7 @@
 <link rel="import" href="kudos-list.html">
 <link rel="import" href="../bower_components/platinum-sw/platinum-sw-elements.html">
 <dom-module id="kudos-demos">
-<!--  <platinum-sw-register
+  <platinum-sw-register
         auto-register
         skip-waiting
         clients-claim
@@ -11,7 +11,7 @@
       <platinum-sw-cache
           default-cache-strategy="networkFirst">
       </platinum-sw-cache>
-    </platinum-sw-register>-->
+    </platinum-sw-register>
   <style include="shared-styles">
     :host {
       display: block;
@@ -107,7 +107,7 @@
     </div>
     <div hidden$="{{!stateLogin}}">
       <img id="imgProfile" class="avatar">
-      <h3>¡Bienvenido {{user.displayName}}!</h3>
+      ¡Bienvenido {{user.displayName}}!
     </div>
 
     <template id="resultList" is="dom-repeat" items="{{projects}}" as="project">
@@ -135,7 +135,7 @@
             <div>{{project.description}}</div>
           </div>
           <div class="kudos">
-            <kudos-list project="{{project}}" _user="{{userUid}}"></kudos-list>  
+            <kudos-list project="{{project}}" _firebase="{{_firebase}}" _user="{{userUid}}"></kudos-list>  
           </div>
       </paper-card>
     </template>
@@ -274,12 +274,6 @@
           project.id=child.key;
           that.push('projects', project);
         });
-      });
-    },
-    getKudosProject:function(idProject){
-      var ref = firebase.database().db.ref("/users/" + this.userUid + "/" + idProject + "/kudos");
-      ref.once("value").then(function(snapshot) {
-        console.log(snapshot.val());
       });
     },
     openModal:function(e){

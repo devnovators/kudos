@@ -100,7 +100,7 @@
       //self.kudosUser=[];
       console.info('leyendo kudoUser ===============1');
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
-        console.log(snapshot);
+        console.log(snapshot.val());
         snapshot.forEach(function(child) {
           console.info('leyendo kudoUser ===============2');
           if(child.val()!=null){

@@ -97,7 +97,6 @@
     getKudosUser:function(){
       var self = this;
       //self.kudosUser=[];
-      console.info('===============1== ' + this._user + " - project: " + this.project.id);
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
         console.log(snapshot.val());
         snapshot.forEach(function(child) {
@@ -107,12 +106,11 @@
           if(child.val()!=null){
             console.log(child.key);
             _active= child.val();
-            that.$$('#' + _idKudo).active=_active;
+            self.$$('#' + _idKudo).active=_active;
           }
           
         });
       });
-      console.info('leyendo kudoUser ===============fin');
     },
     verifyActive:function(idKudo){
       var state="";

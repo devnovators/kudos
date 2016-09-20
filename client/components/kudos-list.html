@@ -33,7 +33,7 @@
     --paper-badge-background: var(--paper-light-blue-300);
   }
   paper-button.kudo:hover {
-    background-color: #FDBD2C; /*#FAB96D;*/
+    /*background-color: #FDBD2C; */ /*#FAB96D;*/
   }
   paper-button.kudo {
     background-color: #999999; /*#FFF5E0;*/
@@ -92,12 +92,13 @@
     },
     attached:function(){
       this.getKudosUser();
-      this.getKudos();
+      //this.getKudos();
     },
     getKudosUser:function(){
       var self = this;
-      self.kudosUser=new Array();
+      self.kudosUser=[];
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
+        console.log(snapshot.numChildren());
         snapshot.forEach(function(child) {
           var valor="{" + child.key + ": " + child.val() + "}";
           self.push('kudosUser',valor);

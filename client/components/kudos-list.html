@@ -92,15 +92,12 @@
     getKudosUser:function(){
       var self = this;
       firebase.database().ref('/users').child(this._user).child(this.project.id).child('kudos').once('value').then(function(snapshot) {
-        console.log(snapshot.val());
         snapshot.forEach(function(child) {
           var _active=false;
           var _idKudo=child.key;
           if(child.val()!=null){
-            console.log(child.key);
             _active= child.val();
             if(self.$$('#' + _idKudo)!=null){
-              console.info(self.$$('#' + _idKudo));
               self.$$('#' + _idKudo).active=_active;
             }
           }
